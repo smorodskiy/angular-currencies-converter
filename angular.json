@@ -25,5 +25,8 @@
           }
         }
       }},
-    "defaultProject": "angular_count"
+    "defaultProject": "angular_count",
+    "cli": {
+      "analytics": false
+    }
   }
