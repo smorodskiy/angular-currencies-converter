@@ -1,8 +1,6 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { interval, Observable, fromEvent, debounceTime, filter, map, Subject, timer, scan, startWith, BehaviorSubject, mapTo, throttle, throttleTime, count, timeInterval, takeWhile, switchMap, take } from 'rxjs';
 
-const numbers = interval(1000);
-
 @Component({
     selector: 'counter',
     template: `<div class="page-header">
@@ -18,7 +16,7 @@ const numbers = interval(1000);
 
 export class Counter implements OnInit {
 
-    @ViewChild('btn', { static: true }) button: ElementRef;   
+    //    @ViewChild('btn', { static: true }) button: ElementRef;   
 
     constructor() { }
 
@@ -29,13 +27,13 @@ export class Counter implements OnInit {
     // Interval of stream timer
     interval: number = 1000;
     // Interval between mouse click
-    clickInterval: number = 500;    
-    
+    clickInterval: number = 500;
+
     // Convert sec to MM:SS
     convertSec(sec: number): void {
         this.mmSS = new Date(sec * 1000).toISOString().substring(14, 19);
     }
-    
+
 
     ngOnInit() {
 
@@ -43,20 +41,36 @@ export class Counter implements OnInit {
         const btnStartSelector = document.querySelector('.counter-start');
         const btnStopSelector = document.querySelector('.counter-stop');
         const btnWaitSelector = document.querySelector('.counter-wait');
-        
+
         // Mouse clicks stream
         const btnStart$ = fromEvent(btnStartSelector, 'click');
         const btnStop$ = fromEvent(btnStopSelector, 'click');
         const btnWait$ = fromEvent(btnWaitSelector, 'click');
-        
+
+        // Counter stream
+        let counter$;
+        // Subscriber to counter
+        let counterSubId;
+        // Toogle
+        let isPause: boolean = false;
+        console.log(this.count);
         // INIT count stream
-        const counter$ = timer(0, this.interval)
-        .pipe(            
-            mapTo(1),
-            map(x => this.count -= x),
-            takeWhile(x => x >= 0)
-        );
-        
+        let initCount = (sec: number) => {
+            if (isPause == false) {
+                if (counter$) counterSubId.unsubscribe();
+                this.count = sec;                
+                counter$ = timer(0, this.interval)
+                    .pipe(
+                        mapTo(1),
+                        map(x => this.count -= x),
+                        takeWhile(x => x >= 0)
+                    );
+
+            }
+            counterSubId = counter$.subscribe((timeLeft) => this.convertSec(timeLeft));
+            isPause = false;
+        }
+
         // INIT "Wait" button stream
         let btnWaitStream$ = btnWait$.pipe(
             timeInterval(),
@@ -64,28 +78,28 @@ export class Counter implements OnInit {
             filter(val => val == 1)
         );
 
-        
-        let counterSub;
 
         // Subscriber to "Start" button
         btnStart$.subscribe(() => {
-            this.count = 120;
-            counterSub = counter$.subscribe((timeLeft) => this.convertSec(timeLeft));
+            initCount(120);
         })
-        
+
         // Subscriber to "Stop" button
         btnStop$.subscribe(() => {
-            counterSub.unsubscribe();
+            isPause = false;
             this.count = 0;
+            // counter$.unsubscribe();
+            counterSubId.unsubscribe();
         })
 
         // Subscriber to "Wait" button
-        btnWaitStream$.subscribe((e) => {
-            counterSub.unsubscribe();
+        btnWaitStream$.subscribe(() => {
+            isPause = true;
+            counterSubId.unsubscribe();
         });
     }
     ngOnDestroy() {
-        
+
     }
 
 }
