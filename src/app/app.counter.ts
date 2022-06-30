@@ -1,16 +1,17 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { time } from 'console';
 import { interval, Observable, fromEvent, debounceTime, filter, map, Subject, timer, scan, startWith, BehaviorSubject, mapTo, throttle, throttleTime, count, timeInterval, takeWhile, switchMap, take } from 'rxjs';
 
 @Component({
     selector: 'counter',
-    template: `<div class="page-header">
-        <h1> Счетчик </h1>
-    </div>
-    <div class="counter-wrapper">
-            <h1 class="counter-display">{{mmSS}}</h1>                        
-            <button class="counter-start">Start</button>
-            <button class="counter-stop">Stop</button>    
-            <button class="counter-wait">Wait</button>
+    template: `
+    <div class="rounded bg-gradient-4 shadow p-5 text-center mb-5 m-4">
+            <h1 class="text-center display-4 mb-4">Счетчик</h1>
+            <input [(ngModel)]="inputTime" type="time" class="form-control w-50 d-inline-flex p-2" >
+            <h1 class="counter-display m-3 display-3">{{mmSS}}</h1>
+            <button class="m-2 counter-start btn btn-dark">Start</button>
+            <button class="m-2 counter-stop btn btn-dark">Stop</button>    
+            <button class="m-2 counter-wait btn btn-dark">Wait</button>
     </div>`
 })
 
@@ -18,12 +19,12 @@ export class Counter implements OnInit {
 
     //    @ViewChild('btn', { static: true }) button: ElementRef;   
 
-    constructor() { }
+    constructor() {}
 
     // init start num
     count: number = 300;
     // MM:SS format
-    mmSS: string;
+    mmSS: string = "00:00";
     // Interval of stream timer
     interval: number = 1000;
     // Interval between mouse click
@@ -34,6 +35,25 @@ export class Counter implements OnInit {
         this.mmSS = new Date(sec * 1000).toISOString().substring(14, 19);
     }
 
+    // Render on the page
+    renderMMss(count : number) {
+        
+    }
+
+    inputTime: number;
+
+    hmsToSecondsOnly(str) {
+        var p = str.split(':'),
+            s = 0, m = 1;
+    
+        while (p.length > 0) {
+            s += m * parseInt(p.pop(), 10);
+            m *= 60;
+        }
+    
+        return s;
+    }
+
 
     ngOnInit() {
 
@@ -41,19 +61,22 @@ export class Counter implements OnInit {
         const btnStartSelector = document.querySelector('.counter-start');
         const btnStopSelector = document.querySelector('.counter-stop');
         const btnWaitSelector = document.querySelector('.counter-wait');
+        const inputSelector = document.getElementById('time');
+
 
         // Mouse clicks stream
         const btnStart$ = fromEvent(btnStartSelector, 'click');
         const btnStop$ = fromEvent(btnStopSelector, 'click');
         const btnWait$ = fromEvent(btnWaitSelector, 'click');
-
+        
+        // console.log(this.count)
         // Counter stream
         let counter$;
         // Subscriber to counter
         let counterSubId;
         // Toogle
-        let isPause: boolean = false;
-        console.log(this.count);
+        let isPause: boolean = false;    
+
         // INIT count stream
         let initCount = (sec: number) => {
             if (isPause == false) {
@@ -78,10 +101,11 @@ export class Counter implements OnInit {
             filter(val => val == 1)
         );
 
-
         // Subscriber to "Start" button
         btnStart$.subscribe(() => {
-            initCount(120);
+            initCount(10);
+            console.log(this.inputTime);
+            // console.log(inputSelector.);
         })
 
         // Subscriber to "Stop" button
@@ -97,6 +121,8 @@ export class Counter implements OnInit {
             isPause = true;
             counterSubId.unsubscribe();
         });
+
+        this.renderMMss(this.count);
     }
     ngOnDestroy() {
 
