@@ -1,15 +1,7 @@
-import { Component, Output, EventEmitter } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { interval, Observable, fromEvent, debounceTime, filter, map, Subject, timer, scan, startWith, BehaviorSubject, mapTo, throttle, throttleTime, count, timeInterval } from 'rxjs';
 
-import { fromEvent, interval, merge, noop, NEVER, Observable } from 'rxjs';
-import { map, mapTo, scan, startWith, switchMap, tap } from 'rxjs/operators';
-
-interface State {
-    count: boolean;
-    countup: boolean;
-    speed: number;
-    value: number;
-    increase: number;
-  }
+const numbers = interval(1000);
 
 @Component({
     selector: 'counter',
@@ -18,87 +10,92 @@ interface State {
     </div>
     <div class="counter-wrapper">
             <h1 class="counter-display">{{count}}</h1>
-            <button (click)="counterSet(1)" class="counter-start">Start</button>
-            <button (click)="counterSet(0)" class="counter-stop">Stop</button>    
-            <button (click)="counterSet(-1)" class="counter-stop">Wait</button>
+            <button (click)="getItem($event)" class="counter-start">Start</button>
+            <button (click)="setTimer(0)" class="counter-stop">Stop</button>    
+            <button (click)="setTimer(-1)" class="counter-wait">Wait</button>
     </div>`
 })
 
-export class CounterModule {
+export class Counter implements OnInit {
 
-    count: number;
+    @ViewChild('btn', { static: true }) button: ElementRef;
 
-    counterSet(param: number) {
-        console.log(param);
-        this.count = param;
+    constructor() { }
+
+    setTimer(param: number) {
+
     }
+    // private buttonClicked = new Subject<string>();
 
-    clickStream = new Observable((obs) => {
-       
-       setTimeout(() => {
-        obs.next('Start');
-       }, 1500);
-        
-    });    
+    public getItem(itemId: string) {
+        // this.buttonClicked.next(itemId);
+    }
+    // init start num
+    count: number = 0;
+    interval: number = 1000;
+    clickInterval: number = 500;
 
-    getElem = (id: string): HTMLElement => document.getElementById(id);
-    fromClick = (id: string) => fromEvent(this.getElem(id), 'click');
+    btnSelector = document.querySelector('.counter-start');
+
+
+    renderCount(num: number){
+        this.count = num;
+    }
+    // watch = new Observable(observer => {
+
+    //     observer.next(this.count);
+
+    //     const watchInterval = setInterval(() => {
+    //         this.count += 1;
+    //         observer.next(this.count);
+    //     }, 1000);
+
+    //     return () => clearInterval(watchInterval);
+    // }).pipe(
+    //     filter(data => data > 3)
+    // );
+
+    // subscribe = example.subscribe(val => console.log(val));
+    // stopwatchSubscription = this.watch.subscribe(count => {
+    //     // console.log(count);
+    // });
+
+    // buttonSubscription =  fromEvent(document.querySelector('.counter-start'), 'click')
+    //         .pipe(debounceTime(300))
+    //         .subscribe(res => console.log(res));
+
 
     ngOnInit() {
-        // this.clickStream.subscribe((data) =>          
-        // )
+        
+        // Count stream
+        const counter$ = timer(0, 1000);
+        // Mouse clicks stream
+        const clickStream$ = fromEvent(this.btnSelector, 'click');
+        // const toggle$ = new BehaviorSubject(true);
 
-        console.log(this.fromClick)
+        // 
+        let doubleClick$ = clickStream$.pipe(
+            timeInterval(),
+            scan((acc, val) => val.interval < this.clickInterval ? acc + 1 : 0, 0),
+            filter(val => val == 1)
+        );
+
+        // Subscribes to stream
+        doubleClick$.subscribe((e) => console.log('Pause the timer'));
+        // counter$.subscribe((timeLeft) => this.renderCount(timeLeft));
+        counter$.subscribe((v) => console.log(v));
+
+        // const buttonClickedDebounced = this.buttonClicked.pipe(
+        //     scan((acc, cur) => {
+        //         acc + cur;
+        //         console.log(acc + cur);
+        //     }, true), startWith(true)
+        // );
+
+
     }
+    ngOnDestroy() {
 
-    // const getElem = (id: string): HTMLElement => document.getElementById(id);
-    // const getVal = (id: string): number => parseInt(this.getElem(id)['value']);    
-    
-    // const fromClick = (id: string) => fromEvent(this.getElem(id), 'click');
-    // const fromClickAndMapTo = (id: string, obj: {}) =>
-    // this.fromClick(id).pipe(mapTo(obj));
-    
-    // const fromClickAndMap = (id: string, fn: _ => {}) =>
-    // this.fromClick(id).pipe(map(fn));
-    
-    // const setValue = (val: number) =>
-    //   (this.getElem('counter').innerText = val.toString());
-      
-    //   const events$ = merge(
-    //     this.fromClickAndMapTo('start', { count: true }),
-    //     this.fromClickAndMapTo('pause', { count: false }),
-    //     this.fromClickAndMapTo('reset', { value: 0 }),
-    //     this.fromClickAndMapTo('countup', { countup: true }),
-    //     this.fromClickAndMapTo('countdown', { countup: false }),
-    //     // fromClickAndMap('setto', _ => ({ value: getVal('value') })),
-    //     // fromClickAndMap('setspeed', _ => ({ speed: getVal('speed') })),
-    //     // fromClickAndMap('setincrease', _ => ({ increase: getVal('increase') }))
-    //   );
-      
-    //   const stopWatch$ = events$.pipe(
-    //     startWith({
-    //       count: false,
-    //       speed: 1000,
-    //       value: 0,
-    //       countup: true,
-    //       increase: 1
-    //     }),
-    //     scan((state: State, curr): State => ({ ...state, ...curr }), {}),
-    //     tap((state: State) => setValue(state.value)),
-    //     switchMap((state: State) =>
-    //       state.count
-    //         ? interval(state.speed).pipe(
-    //             tap(
-    //               _ =>
-    //                 (state.value += state.countup ? state.increase : -state.increase)
-    //             ),
-    //             tap(_ => setValue(state.value))
-    //           )
-    //         : NEVER
-    //     )
-    //   );
-      
-    //   stopWatch$.subscribe();
-
+    }
 
 }
