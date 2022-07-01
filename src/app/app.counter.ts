@@ -78,9 +78,12 @@ export class Counter implements OnInit {
             counter$ = null;
         }
 
+        const finishTimer = () => {
+            this.mmSS = '*Beeep...*';
+        }
+
         // INIT count stream
         let initCount = (sec: number) => {
-
             if (isPause == false) {
                 this.count = sec + 1;
                 counter$ = timer(0, this.interval)
@@ -89,14 +92,13 @@ export class Counter implements OnInit {
                         map(x => this.count -= x),
                         takeWhile(x => x >= 0)
                     );
-
             }
-
             counterSubId = counter$.subscribe(
                 (timeLeft) => this.setTimerDisplay(timeLeft),
                 (err) => console.log('Some error!'),
-                () => {                    
+                () => {
                     resetTimer();
+                    finishTimer();
                 }
             );
 
