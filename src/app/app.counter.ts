@@ -6,13 +6,13 @@ import { interval, Observable, fromEvent, debounceTime, filter, map, Subject, ti
     selector: 'counter',
     template: `
     <div class="rounded bg-gradient-4 shadow p-5 text-center mb-5 m-4">
-            <h1 class="text-center display-4 mb-4">Счетчик</h1>
-            <p>Введите время в формате MM:SS</p>
+            <h1 class="text-center display-4 mb-4">Countdown timer</h1>
+            <p>Enter the time in MM:SS format</p>
             <input type="text" pattern="^[0-5][0-9]\:[0-5][0-9]\$" class="form-control w-50 d-inline-flex p-2" [(ngModel)]="inputTime">
             <h2 class="counter-display m-3 display-3" [innerHTML]="mmSS"></h2>
-            <button class="m-2 counter-start btn btn-dark">Start</button>
-            <button class="m-2 counter-stop btn btn-dark">Stop</button>    
+            <button class="m-2 counter-start btn btn-dark" [innerHTML]="currentCaption">Start</button>            
             <button class="m-2 counter-wait btn btn-dark">Wait</button>
+            <button class="m-2 counter-reset btn btn-dark">Reset</button>
     </div>`
 })
 
@@ -24,6 +24,7 @@ export class Counter implements OnInit {
 
     // init start num
     count: number = 0;
+    countOnStart: number = 0;
     // MM:SS format
     mmSS: string = "00:00";
     // Interval of stream timer
@@ -31,7 +32,8 @@ export class Counter implements OnInit {
     // Interval between mouse click
     clickInterval: number = 500;
     // Input value MM:SS
-    inputTime: string;
+    inputTime: string = '';
+    currentCaption: string = 'Start';
 
     // Convert sec to MM:SS and display
     setTimerDisplay(sec: number): void {
@@ -48,18 +50,16 @@ export class Counter implements OnInit {
         return s;
     }
 
-
     ngOnInit() {
 
         // Selectors for button elements
         const btnStartSelector = document.querySelector('.counter-start');
-        const btnStopSelector = document.querySelector('.counter-stop');
+        const btnResetSelector = document.querySelector('.counter-reset');
         const btnWaitSelector = document.querySelector('.counter-wait');
-
 
         // Mouse clicks stream
         const btnStart$ = fromEvent(btnStartSelector, 'click');
-        const btnStop$ = fromEvent(btnStopSelector, 'click');
+        const btnReset$ = fromEvent(btnResetSelector, 'click');
         const btnWait$ = fromEvent(btnWaitSelector, 'click');
 
         // Counter stream
@@ -69,11 +69,22 @@ export class Counter implements OnInit {
         // Toogle
         let isPause: boolean = false;
 
+        // const unscribeFromCounter = () => {
+        //     if (counter$) counterSubId.unsubscribe();
+        // }
+
+        const resetTimer = () => {
+            this.mmSS = '00:00';
+            this.inputTime = '';
+            this.currentCaption = 'Start';
+            counterSubId.unsubscribe();
+            counter$ = null;
+        }
+
         // INIT count stream
         let initCount = (sec: number) => {
             if (isPause == false) {
-                if (counter$) counterSubId.unsubscribe();
-                this.count = sec+1;
+                this.count = sec + 1;
                 counter$ = timer(0, this.interval)
                     .pipe(
                         mapTo(1),
@@ -84,10 +95,12 @@ export class Counter implements OnInit {
             }
             counterSubId = counter$.subscribe(
                 (timeLeft) => this.setTimerDisplay(timeLeft),
-               (err) => console.log('Some error!'),
-               () => this.mmSS = 'Finish...'
+                (err) => console.log('Some error!'),
+                () => {                    
+                    resetTimer();
+                }
             );
-            
+
             isPause = false;
         }
 
@@ -100,23 +113,30 @@ export class Counter implements OnInit {
 
         // Subscriber to "Start" button
         btnStart$.subscribe(() => {
-            const seconds = this.msToSeconds(this.inputTime);
-            initCount(seconds);
+
+            if (counter$ && !isPause) {
+                resetTimer();
+            } else {
+                this.countOnStart = this.msToSeconds(this.inputTime);
+                if (this.countOnStart > 0) {
+                    initCount(this.countOnStart);
+                    this.currentCaption = 'Stop';
+                }
+            }
+
         })
 
-        // Subscriber to "Stop" button
-        btnStop$.subscribe(() => {
-            this.count = 0;
-            this.mmSS = '00:00';
-            this.inputTime = '';
+        // Subscriber to "Reset" button
+        btnReset$.subscribe(() => {
+            this.count = this.countOnStart + 1;
             isPause = false;
-            counterSubId.unsubscribe();
         })
 
         // Subscriber to "Wait" button
         btnWaitStream$.subscribe(() => {
+            if (counter$) counterSubId.unsubscribe();
+            this.currentCaption = 'Start';
             isPause = true;
-            counterSubId.unsubscribe();
         });
 
     }
