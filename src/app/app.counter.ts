@@ -69,10 +69,7 @@ export class Counter implements OnInit {
         // Toogle
         let isPause: boolean = false;
 
-        // const unscribeFromCounter = () => {
-        //     if (counter$) counterSubId.unsubscribe();
-        // }
-
+        // Reset timer and all fields
         const resetTimer = () => {
             this.mmSS = '00:00';
             this.inputTime = '';
@@ -83,6 +80,7 @@ export class Counter implements OnInit {
 
         // INIT count stream
         let initCount = (sec: number) => {
+            
             if (isPause == false) {
                 this.count = sec + 1;
                 counter$ = timer(0, this.interval)
@@ -93,6 +91,7 @@ export class Counter implements OnInit {
                     );
 
             }
+
             counterSubId = counter$.subscribe(
                 (timeLeft) => this.setTimerDisplay(timeLeft),
                 (err) => console.log('Some error!'),
