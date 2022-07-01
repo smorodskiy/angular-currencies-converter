@@ -112,7 +112,7 @@ export class Counter implements OnInit {
             filter(val => val == 1)
         );
 
-        // Subscriber to "Start" button
+        // Subscriber to "Start/Stop" button
         btnStart$.subscribe(() => {
 
             if (counter$ && !isPause) {
