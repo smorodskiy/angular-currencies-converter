@@ -57,7 +57,7 @@ export class Counter implements OnInit {
         const btnResetSelector = document.querySelector('.counter-reset');
         const btnWaitSelector = document.querySelector('.counter-wait');
 
-        // Mouse clicks stream
+        // Mouse click streams
         const btnStart$ = fromEvent(btnStartSelector, 'click');
         const btnReset$ = fromEvent(btnResetSelector, 'click');
         const btnWait$ = fromEvent(btnWaitSelector, 'click');
@@ -80,7 +80,7 @@ export class Counter implements OnInit {
 
         // INIT count stream
         let initCount = (sec: number) => {
-            
+
             if (isPause == false) {
                 this.count = sec + 1;
                 counter$ = timer(0, this.interval)
