@@ -128,7 +128,6 @@ export class Counter implements OnInit {
         // Subscriber to "Reset" button
         btnReset$.subscribe(() => {
             this.count = this.countOnStart + 1;
-            isPause = false;
         })
 
         // Subscriber to "Wait" button
