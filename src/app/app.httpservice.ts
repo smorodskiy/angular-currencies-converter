@@ -9,12 +9,12 @@ import { Observable } from 'rxjs';
 
 export class HttpService {
 
-    private url = 'https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?json';
+    
 
     constructor(private http: HttpClient) { }
     
-    getCurrencyFromBank(): Observable<any> {
-        return this.http.get(this.url);
+    getCurrency(url: any): Observable<any> {
+        return this.http.get(url);
     }
 
 
