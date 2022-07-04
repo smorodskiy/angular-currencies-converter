@@ -8,7 +8,7 @@ import { HttpService } from './app.httpservice';
     template: `
     <div class="wrapper">
         <form class="form-inline"> 
-            <span {}>USD</span>
+            <span>USD</span>
             <span>EUR</span>
             <div class="input-group mb-2 mr-sm-2 mb-sm-0">
       
@@ -53,17 +53,17 @@ import { HttpService } from './app.httpservice';
 export class CurrencyConvertor implements OnInit {
 
     constructor(private http$: HttpService) { }
-
+    url: string = 'https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?json';    
     currency: any
     usd: number; 
     eur: number;
     a: any;
     ngOnInit() {
 
-        const res = this.http$.getCurrencyFromBank()
+        const res = this.http$.getCurrency(this.url)
         .subscribe(
             pipe(
-                map(data => data)
+               data => console.log(data)
             )
             
         )
