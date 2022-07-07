@@ -32,6 +32,8 @@ export class DataSource {
 
             map(res => {
                 
+                res.sta
+
                 res.forEach((jsonItem) => {
 
                     for (let key in jsonItem) {
@@ -52,9 +54,10 @@ export class DataSource {
                 });
 
                 return this.currenciesTemp;
-            })
+            }),
             
         )
+        
     }
 
 
