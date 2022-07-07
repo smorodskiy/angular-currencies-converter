@@ -9,12 +9,12 @@ import { Currency } from './model/currency-model';
     <div class="container">
         <form class="form-inline d-flex flex-column "> 
             <div>
-                <div *ngFor="let cur of this.actualCurrency">
+                <div *ngFor="let cur of actualCurrency">
                     <span>{{cur.name}} - </span>
                     <span>{{cur.rate}}</span>
                 </div>
             </div>
-            <div class="input-group input-group-lg">                    
+            <div class="input-group input-group-lg">
                         <span class="input-group-text currency-symbol">$</span>
                         
                         <input (change)="getCurrencies()" type="text" class="form-control currency-amount" id="inlineFormInputGroup" placeholder="0.00" size="8">
@@ -52,6 +52,7 @@ import { Currency } from './model/currency-model';
 export class CurrencyConvertor {
 
     actualCurrency: Currency[];
+    currenciesName: [] = [];
     // test: ["USD", ]
 
 
@@ -69,14 +70,21 @@ export class CurrencyConvertor {
         this.actualCurrency = [];
         console.log(this.actualCurrency);
     }
+    
+    getCurrenciesName() {    
+        this.actualCurrency.forEach( cur => {
+            this.currenciesName.push(cur.name);
+        })
+    }
 
     getCurrencies() {    
         this.clearActualCurrencies();    
         this.data$.getActualCurrencies().subscribe(
             currencies => {
+                if (currencies)
                 this.actualCurrency = currencies;
-            }
-        )                
+            }            
+        )        
     };
 
 }
